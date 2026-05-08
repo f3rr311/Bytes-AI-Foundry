@@ -1,5 +1,24 @@
 # Update Logs
 
+## v2.3.2 — dnd5e 5.3.x Compatibility
+
+*Metadata-only release — no code changes.*
+
+* Verified compatibility with dnd5e system v5.3.0.
+* Updated dnd5e compatibility range: 3.3.1 – 5.3.x (verified 5.3.0).
+* Thanks to [@soteyl](https://github.com/soteyl) for the contribution ([#5](https://github.com/f3rr311/Bytes-AI-Foundry/pull/5)).
+
+---
+
+## v2.3.1 — dnd5e 5.2.x Compatibility
+
+*Metadata-only release — no code changes.*
+
+* Verified compatibility with dnd5e system v5.2.5.
+* Updated dnd5e compatibility range: 3.3.1 – 5.2.x (verified 5.2.5).
+
+---
+
 ## v2.3.0 — NPC & Character Generation, Multi-Provider AI, SRD Compliance
 
 *17 new files, 8 modified files, ~7,000 lines of new code.*
