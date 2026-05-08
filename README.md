@@ -4,7 +4,7 @@
 # Bytes AI Foundry for Foundry VTT
 
 ![Foundry v13 Compatible](https://img.shields.io/badge/Foundry-v13-brightgreen?style=flat-square) ![Foundry v12 Compatible](https://img.shields.io/badge/Foundry-v12-green?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
-[![Version](https://img.shields.io/badge/Version-2.3.0-orange?style=flat-square)](https://github.com/f3rr311/Bytes-AI-Foundry/releases) [![D&D 5e](https://img.shields.io/badge/D%26D_5e-v3.3_%E2%80%93_v5.x-red?style=flat-square)](https://github.com/foundryvtt/dnd5e)
+[![Version](https://img.shields.io/badge/Version-2.3.2-orange?style=flat-square)](https://github.com/f3rr311/Bytes-AI-Foundry/releases) [![D&D 5e](https://img.shields.io/badge/D%26D_5e-v3.3_%E2%80%93_v5.x-red?style=flat-square)](https://github.com/foundryvtt/dnd5e)
 
 <br>
 
@@ -37,7 +37,7 @@
 >
 > ### Requirements
 >
-> - **System:** D&D 5e only (`dnd5e` v3.3.1 – v5.1.x)
+> - **System:** D&D 5e only (`dnd5e` v3.3.1 – v5.3.x)
 > - **Foundry VTT:** v12.331 – v13.351
 > - **API Key:** An API key for at least one [supported AI provider](#-multi-provider-ai-support) — [OpenAI](https://platform.openai.com/api-keys) (default), Anthropic, Google Gemini, xAI, or a local Ollama server.
 
