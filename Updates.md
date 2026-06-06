@@ -1,5 +1,42 @@
 # Update Logs
 
+## v2.3.3 — Foundry V14 Support · Provider & Settings Reliability
+
+*Verified live on Foundry VTT v14.363 + dnd5e 5.3.3. Still compatible with v12–v13.*
+
+### 🧩 Foundry V14
+
+* **Foundry VTT v14 support** — updated compatibility (verified/maximum **14**); dnd5e verified bumped to **5.3.3**. Resolves the module not appearing on v14 ([#7](https://github.com/f3rr311/Bytes-AI-Foundry/issues/7)).
+* **Readable dialogs on v14** — preview inputs, stat badges, regen buttons, labels, and form fields now use explicit high-contrast colors so text stays legible where Foundry's theme variables resolved too dark.
+
+### 🎨 Image Prompts ([#4](https://github.com/f3rr311/Bytes-AI-Foundry/issues/4))
+
+* **Your Image Prompt setting now applies to every provider.** Previously xAI and Stability AI ignored it and forced a hardcoded dark-fantasy style. The editable template is now applied once and honored by OpenAI, xAI, Stability, and FAL alike — set a bright/clean prompt and it sticks.
+* **Image cost tracking** now counts every provider (was OpenAI-only).
+
+### ⚙️ Settings Reliability
+
+* **Text + image API keys now save together.** Removed a page-reload-on-change that raced the save and dropped the second key.
+* **Live model field** — changing a provider fills the model field instantly in the open settings window (no more reopen-to-see-it).
+* **xAI image model** now auto-fills and is honored (`grok-imagine-image`).
+* **Auto-heal for stale models** — retired/invalid model IDs (e.g. a bad `grok-4.1-fast`) are corrected to the current provider default on load.
+* **Clearer settings** — help banner explaining the `{prompt}` placeholder, plus sharper hints.
+
+### 🤖 Current Models + GPT-5
+
+* **Refreshed default models (June 2026):** OpenAI `gpt-5.5` / `gpt-5.4-mini`, Anthropic `claude-sonnet-4-6` / `claude-haiku-4-5`, Gemini `gemini-3.5-flash` / `gemini-3.1-flash-lite`, xAI `grok-4.3`.
+* **GPT-5 compatibility** — uses `max_completion_tokens` (required by GPT-5.x) and raised token ceilings so reasoning models have room to emit complete item/actor JSON.
+
+### 🔔 UX
+
+* **Actionable error notifications** — provider failures now show a clear in-game message (e.g. "Model not found — check the model name in settings") instead of only a console error. Deduped so one generation doesn't spam toasts.
+
+### 🧪 Testing
+
+* 381 Vitest unit tests pass (added coverage for the prompt hoist, settings migration, error notifications, GPT-5 token handling, and provider/model completeness guards).
+
+---
+
 ## v2.3.2 — dnd5e 5.3.x Compatibility
 
 *Metadata-only release — no code changes.*
