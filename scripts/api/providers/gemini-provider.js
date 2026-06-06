@@ -3,6 +3,8 @@
  * Uses Google's native generateContent REST API.
  */
 
+import { notifyProviderError } from './base-provider.js';
+
 // ─── Provider Definition ───
 
 export const geminiProvider = {
@@ -12,11 +14,11 @@ export const geminiProvider = {
   supportsJsonMode: true,
   supportsImageGeneration: false,
   defaultEndpoint: "https://generativelanguage.googleapis.com/v1beta",
-  defaultModels: { chat: "gemini-2.5-flash", light: "gemini-2.5-flash-lite" },
+  defaultModels: { chat: "gemini-3.5-flash", light: "gemini-3.1-flash-lite" },
   modelChoices: {
-    "gemini-2.5-pro":        "Gemini 2.5 Pro (Most Capable)",
-    "gemini-2.5-flash":      "Gemini 2.5 Flash (Balanced)",
-    "gemini-2.5-flash-lite": "Gemini 2.5 Flash Lite (Fast & Cheap)"
+    "gemini-3.1-pro":        "Gemini 3.1 Pro (Most Capable)",
+    "gemini-3.5-flash":      "Gemini 3.5 Flash (Balanced)",
+    "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite (Fast & Cheap)"
   },
 
   /**
@@ -95,6 +97,7 @@ export const geminiProvider = {
       if (!response.ok) {
         const errorBody = await response.text().catch(() => "");
         console.error(`Gemini API error ${response.status}: ${errorBody}`);
+        notifyProviderError("Gemini", response.status, errorBody);
         return { text: null, usage: null };
       }
 

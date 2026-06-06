@@ -6,28 +6,37 @@ export const MODULE_ID = "chatgpt-item-generator";
 
 /** Default models per text provider, used for smart defaults on provider switch. */
 export const PROVIDER_MODEL_DEFAULTS = {
-  openai:    { chat: "gpt-4.1",                   light: "gpt-4.1-mini" },
-  anthropic: { chat: "claude-sonnet-4-20250514",   light: "claude-haiku-4-5-20251001" },
-  gemini:    { chat: "gemini-2.5-flash",           light: "gemini-2.5-flash-lite" },
-  xai:       { chat: "grok-4-0709",               light: "grok-4-1-fast-non-reasoning" },
-  ollama:    { chat: "llama3",                     light: "llama3" },
-  custom:    { chat: "",                           light: "" }
+  openai:    { chat: "gpt-5.5",              light: "gpt-5.4-mini" },
+  anthropic: { chat: "claude-sonnet-4-6",    light: "claude-haiku-4-5" },
+  gemini:    { chat: "gemini-3.5-flash",     light: "gemini-3.1-flash-lite" },
+  xai:       { chat: "grok-4.3",             light: "grok-4.3" },
+  ollama:    { chat: "llama3",               light: "llama3" },
+  custom:    { chat: "",                     light: "" }
 };
 
-/** Default image model per image provider. */
-const IMAGE_MODEL_DEFAULTS = {
-  "openai":         "gpt-image-1",
+/** Default image model per image provider. Must cover every imageProvider choice. */
+export const IMAGE_MODEL_DEFAULTS = {
+  "openai":           "gpt-image-1",
+  "xai":              "grok-imagine-image",
   "stable-diffusion": "",
-  "stability-ai":   "stable-diffusion-xl-1024-v0-9",
-  "fal-ai":         "fal-ai/flux/dev"
+  "stability-ai":     "stable-diffusion-xl-1024-v0-9",
+  "fal-ai":           "fal-ai/flux/dev"
 };
 
 /**
  * Run one-time settings migration from older versions.
  * Called once during `ready` hook if _settingsVersion < current.
  */
+/** Model IDs that are retired/invalid and should be reset to the provider default. */
+const RETIRED_MODELS = new Set([
+  // xAI — retired snapshots and a never-valid id shipped by an earlier dev build
+  "grok-4-0709", "grok-4-1-fast-non-reasoning", "grok-4-1-fast", "grok-4.1-fast", "grok-3",
+  // Anthropic — dated id retiring 2026-06-15
+  "claude-sonnet-4-20250514", "claude-haiku-4-5-20251001", "claude-opus-4-20250514"
+]);
+
 async function migrateSettings() {
-  const currentVersion = 1;
+  const currentVersion = 2;
   let stored = 0;
   try {
     stored = game.settings.get(MODULE_ID, "_settingsVersion");
@@ -41,6 +50,21 @@ async function migrateSettings() {
       await game.settings.set(MODULE_ID, "imageProvider", "stable-diffusion");
     }
   } catch { /* setting may not exist yet */ }
+
+  // Migration 2: reset retired/invalid text model IDs to the current provider's
+  // default so saved settings from older versions (or early dev builds) don't 404.
+  try {
+    const provider = game.settings.get(MODULE_ID, "textProvider");
+    const defaults = PROVIDER_MODEL_DEFAULTS[provider];
+    if (defaults) {
+      if (RETIRED_MODELS.has(game.settings.get(MODULE_ID, "chatModel"))) {
+        await game.settings.set(MODULE_ID, "chatModel", defaults.chat);
+      }
+      if (RETIRED_MODELS.has(game.settings.get(MODULE_ID, "lightModel"))) {
+        await game.settings.set(MODULE_ID, "lightModel", defaults.light);
+      }
+    }
+  } catch { /* settings may not exist yet */ }
 
   await game.settings.set(MODULE_ID, "_settingsVersion", currentVersion);
 }
@@ -93,7 +117,7 @@ export function registerSettings() {
   // ─── Text Provider Selection ───
   game.settings.register(MODULE_ID, "textProvider", {
     name: "Text AI Provider",
-    hint: "Select which AI service to use for text generation.\n* Changing the provider will auto-update the Primary and Lightweight model fields on reload.",
+    hint: "Select which AI service to use for text generation.\n* Changing the provider auto-updates the Primary and Lightweight model fields (reopen settings to see the new values).",
     scope: "world",
     config: true,
     type: String,
@@ -107,7 +131,13 @@ export function registerSettings() {
       "custom":    "Custom (OpenAI-Compatible)"
     },
     group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    onChange: async (value) => {
+      // The settings form fills the model fields live on provider change (see the
+      // renderSettingsConfig hook), so the saved field values are authoritative.
+      // Just record the provider so applyProviderDefaults() won't later overwrite
+      // a model the user customized. No page reload (avoids the save race).
+      await game.settings.set(MODULE_ID, "_lastTextProvider", value);
+    }
   });
 
   // ─── API Keys (per provider) ───
@@ -118,8 +148,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "anthropicApiKey", {
     name: "Anthropic API Key",
@@ -128,8 +157,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "geminiApiKey", {
     name: "Google Gemini API Key",
@@ -138,8 +166,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "xaiApiKey", {
     name: "xAI API Key",
@@ -148,8 +175,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "customApiKey", {
     name: "Custom Provider API Key",
@@ -158,8 +184,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "customEndpoint", {
     name: "Custom Provider Endpoint",
@@ -168,8 +193,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
   game.settings.register(MODULE_ID, "ollamaEndpoint", {
     name: "Ollama Endpoint",
@@ -178,36 +202,33 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "http://localhost:11434",
-    group: MODULE_ID + ".text-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".text-provider"
   });
 
   // ─── Model Selection ───
   game.settings.register(MODULE_ID, "chatModel", {
     name: "Primary Model (Item JSON & Roll Tables)",
-    hint: "* Auto-set when you switch Text AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-4.1. Claude: claude-sonnet-4-20250514. Gemini: gemini-2.5-flash. xAI: grok-4-0709. Ollama: your installed model name.",
+    hint: "* Auto-set when you switch Text AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-5.5. Claude: claude-sonnet-4-6. Gemini: gemini-3.5-flash. xAI: grok-4.3. Ollama: your installed model name.",
     scope: "world",
     config: true,
     type: String,
-    default: "gpt-4.1",
-    group: MODULE_ID + ".text-models",
-    onChange: () => window.location.reload()
+    default: "gpt-5.5",
+    group: MODULE_ID + ".text-models"
   });
   game.settings.register(MODULE_ID, "lightModel", {
     name: "Lightweight Model (Names, Fixes, Properties)",
-    hint: "* Auto-set when you switch Text AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-4.1-mini. Claude: claude-haiku-4-5-20251001. Gemini: gemini-2.5-flash-lite. xAI: grok-4-1-fast-non-reasoning. Ollama: your installed model name.",
+    hint: "* Auto-set when you switch Text AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-5.4-mini. Claude: claude-haiku-4-5. Gemini: gemini-3.1-flash-lite. xAI: grok-4.3. Ollama: your installed model name.",
     scope: "world",
     config: true,
     type: String,
-    default: "gpt-4.1-mini",
-    group: MODULE_ID + ".text-models",
-    onChange: () => window.location.reload()
+    default: "gpt-5.4-mini",
+    group: MODULE_ID + ".text-models"
   });
 
   // ─── Image Provider Selection ───
   game.settings.register(MODULE_ID, "imageProvider", {
     name: "Image AI Provider",
-    hint: "Select which AI service to use for image generation.\n* Changing the provider will auto-update the Image Generation Model field on reload.",
+    hint: "Select which AI service to use for image generation.\n* Changing the provider auto-updates the Image Generation Model field (reopen settings to see the new value).",
     scope: "world",
     config: true,
     type: String,
@@ -220,7 +241,13 @@ export function registerSettings() {
       "fal-ai":            "FAL.ai (FLUX, Recraft, Ideogram)"
     },
     group: MODULE_ID + ".image-provider",
-    onChange: () => window.location.reload()
+    onChange: async (value) => {
+      // The settings form fills the image-model field live on provider change
+      // (see the renderSettingsConfig hook), so the saved field value is
+      // authoritative. Just record the provider so applyProviderDefaults() won't
+      // later overwrite a model the user customized. No page reload.
+      await game.settings.set(MODULE_ID, "_lastImageProvider", value);
+    }
   });
   game.settings.register(MODULE_ID, "dalleApiKey", {
     name: "OpenAI Image API Key",
@@ -229,8 +256,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".image-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".image-provider"
   });
   game.settings.register(MODULE_ID, "stabilityApiKey", {
     name: "Stability AI API Key",
@@ -239,8 +265,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".image-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".image-provider"
   });
   game.settings.register(MODULE_ID, "falApiKey", {
     name: "FAL.ai API Key",
@@ -249,8 +274,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".image-provider",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".image-provider"
   });
 
   // ─── Image Model & Format ───
@@ -261,8 +285,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "gpt-image-1",
-    group: MODULE_ID + ".image-settings",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".image-settings"
   });
   game.settings.register(MODULE_ID, "imageFormat", {
     name: "Image Output Format",
@@ -276,8 +299,7 @@ export function registerSettings() {
       "webp": "WebP (Smaller)",
       "jpeg": "JPEG (Smallest)"
     },
-    group: MODULE_ID + ".image-settings",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".image-settings"
   });
 
   // ─── Stable Diffusion Settings ───
@@ -296,8 +318,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "stableDiffusionEndpoint", {
     name: "Stable Diffusion API Endpoint",
@@ -306,8 +327,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "http://127.0.0.1:7860/sd-queue/txt2img",
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "sdMainPrompt", {
     name: "Stable Diffusion Main Prompt",
@@ -316,8 +336,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "Refined, highly detailed, fantasy concept art for a DnD 5e item with these details: {prompt}. Do not include any text in the image.",
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "sdNegativePrompt", {
     name: "Stable Diffusion Negative Prompt",
@@ -326,8 +345,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "rough sketch, blurry, cartoonish, text, watermark, signature, low detail",
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "sdSteps", {
     name: "Stable Diffusion Steps",
@@ -336,8 +354,7 @@ export function registerSettings() {
     config: true,
     type: Number,
     default: 70,
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "sdCfgScale", {
     name: "Stable Diffusion CFG Scale",
@@ -346,8 +363,7 @@ export function registerSettings() {
     config: true,
     type: Number,
     default: 9.0,
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
   game.settings.register(MODULE_ID, "sdSamplerName", {
     name: "Stable Diffusion Sampler Name",
@@ -356,8 +372,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "Euler",
-    group: MODULE_ID + ".stable-diffusion",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".stable-diffusion"
   });
 
   // ─── Customizable Prompts ───
@@ -368,8 +383,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "chatgptRollTablePrompt", {
     name: "Roll Table JSON Prompt (Editable Portion)",
@@ -378,8 +392,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "You are an expert in fantasy RPGs. Generate distinctive, evocative item names for the roll table",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "chatgptFixMismatchPrompt", {
     name: "Fix Mismatch Prompt (Editable Portion)",
@@ -388,8 +401,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "chatgptNamePrompt", {
     name: "Item Name Prompt (Editable Portion)",
@@ -398,18 +410,16 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "You are an expert in fantasy RPGs. Do not include the word 'dragon' unless explicitly requested.",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "dallePrompt", {
     name: "Image Prompt",
-    hint: "Prompt for image generation. Use {prompt} as a placeholder for the item description.",
+    hint: "Template sent to the image model. {prompt} is replaced with the item's name + description. Everything else is the art style. Applies to every image provider (OpenAI, xAI, Stability, FAL).",
     scope: "world",
     config: true,
     type: String,
     default: "A dramatic dark-fantasy illustration of a single DnD 5e item: {prompt}. Rendered in a moody, atmospheric style with deep shadows, rich dark tones, and warm magical highlights or glowing enchantment effects. Highly detailed textures on metal, leather, gemstones, and magical auras. The item is the sole focus, displayed against a dark, shadowy background with subtle ambient lighting. Style of a dark fantasy collectible card or high-end RPG game asset. No text, no letters, no words, no labels, no writing anywhere in the image.",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
 
   // ─── Actor Generation Prompts ───
@@ -420,8 +430,7 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "actorCharacterPrompt", {
     name: "Character Generation Prompt (Extra Instructions)",
@@ -430,28 +439,25 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "actorPortraitPrompt", {
     name: "Actor Portrait Image Prompt",
-    hint: "Prompt template for portrait image generation. Use {prompt} as a placeholder for the actor description.",
+    hint: "Template for the actor's portrait. {prompt} is replaced with the actor's description; the rest sets the art style.",
     scope: "world",
     config: true,
     type: String,
     default: "A portrait of {prompt}. Dark fantasy RPG character portrait. Detailed face and upper body, dramatic lighting, rich dark tones. Painterly style, moody and atmospheric. No text, no letters, no words.",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
   game.settings.register(MODULE_ID, "actorTokenPrompt", {
     name: "Actor Token Image Prompt",
-    hint: "Prompt template for token image generation. Use {prompt} as a placeholder for the actor description.",
+    hint: "Template for the actor's token. {prompt} is replaced with the actor's description; the rest sets the art style.",
     scope: "world",
     config: true,
     type: String,
     default: "A top-down RPG battle map token of {prompt}. Circular token, dark background, dramatic lighting. Detailed miniature style. No text, no letters, no words.",
-    group: MODULE_ID + ".prompts",
-    onChange: () => window.location.reload()
+    group: MODULE_ID + ".prompts"
   });
 }
 

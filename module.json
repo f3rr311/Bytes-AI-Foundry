@@ -2,7 +2,7 @@
     "id": "chatgpt-item-generator",
     "title": "Bytes AI Foundry",
     "description": "Generates AI-powered D&D 5e items, NPCs, characters, and roll tables with descriptions, effects, and images.",
-    "version": "2.3.2",
+    "version": "2.3.3",
     "authors": [
         {
             "name": "Byte_Smarter",
@@ -12,8 +12,8 @@
     ],
     "compatibility": {
         "minimum": "12.331",
-        "verified": "13.351",
-        "maximum": "13.351"
+        "verified": "14",
+        "maximum": "14"
     },
     "relationships": {
         "systems": [
@@ -22,14 +22,14 @@
                 "type": "system",
                 "compatibility": {
                     "minimum": "3.3.1",
-                    "verified": "5.3.0",
+                    "verified": "5.3.3",
                     "maximum": "5.3.x"
                 }
             }
         ]
     },
     "manifest": "https://github.com/f3rr311/Bytes-AI-Foundry/releases/latest/download/module.json",
-    "download": "https://github.com/f3rr311/Bytes-AI-Foundry/releases/download/v2.3.2/Bytes-AI-Foundry.zip",
+    "download": "https://github.com/f3rr311/Bytes-AI-Foundry/releases/download/v2.3.3/Bytes-AI-Foundry.zip",
     "readme": "https://github.com/f3rr311/Bytes-AI-Foundry/blob/main/README.md",
     "changelog": "https://github.com/f3rr311/Bytes-AI-Foundry/releases",
     "license": "https://github.com/f3rr311/Bytes-AI-Foundry/blob/main/LICENSE",

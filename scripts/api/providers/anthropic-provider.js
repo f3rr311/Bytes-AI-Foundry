@@ -3,6 +3,8 @@
  * Uses Anthropic's native Messages API with browser CORS support.
  */
 
+import { notifyProviderError } from './base-provider.js';
+
 // ─── Provider Definition ───
 
 export const anthropicProvider = {
@@ -12,11 +14,11 @@ export const anthropicProvider = {
   supportsJsonMode: true,
   supportsImageGeneration: false,
   defaultEndpoint: "https://api.anthropic.com/v1/messages",
-  defaultModels: { chat: "claude-sonnet-4-20250514", light: "claude-haiku-4-5-20251001" },
+  defaultModels: { chat: "claude-sonnet-4-6", light: "claude-haiku-4-5" },
   modelChoices: {
-    "claude-opus-4-20250514":    "Claude Opus 4 (Most Capable)",
-    "claude-sonnet-4-20250514":  "Claude Sonnet 4 (Balanced)",
-    "claude-haiku-4-5-20251001": "Claude Haiku 4.5 (Fast & Cheap)"
+    "claude-opus-4-8":   "Claude Opus 4.8 (Most Capable)",
+    "claude-sonnet-4-6": "Claude Sonnet 4.6 (Balanced)",
+    "claude-haiku-4-5":  "Claude Haiku 4.5 (Fast & Cheap)"
   },
 
   /**
@@ -87,6 +89,7 @@ export const anthropicProvider = {
       if (!response.ok) {
         const errorBody = await response.text().catch(() => "");
         console.error(`Anthropic API error ${response.status}: ${errorBody}`);
+        notifyProviderError("Anthropic", response.status, errorBody);
         return { text: null, usage: null };
       }
 
