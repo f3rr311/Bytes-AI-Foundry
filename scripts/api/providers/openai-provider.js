@@ -13,14 +13,13 @@ export const openaiProvider = {
   supportsJsonMode: true,
   supportsImageGeneration: true,
   defaultEndpoint: "https://api.openai.com/v1/chat/completions",
-  defaultModels: { chat: "gpt-4.1", light: "gpt-4.1-mini" },
+  defaultModels: { chat: "gpt-5.5", light: "gpt-5.4-mini" },
   modelChoices: {
-    "gpt-4.1": "GPT-4.1 (Best Quality)",
-    "gpt-4.1-mini": "GPT-4.1 Mini (Good Quality, 5x Cheaper)",
-    "gpt-4.1-nano": "GPT-4.1 Nano (Basic, 25x Cheaper)",
-    "gpt-4o": "GPT-4o (Fast)",
-    "gpt-4o-mini": "GPT-4o Mini (Fast, Cheap)",
-    "gpt-4": "GPT-4 (Legacy)"
+    "gpt-5.5": "GPT-5.5 (Best Quality)",
+    "gpt-5.4-mini": "GPT-5.4 Mini (Good Quality, Cheaper)",
+    "gpt-5.4-nano": "GPT-5.4 Nano (Basic, Cheapest)",
+    "gpt-4.1": "GPT-4.1 (Legacy)",
+    "gpt-4o-mini": "GPT-4o Mini (Legacy, Cheap)"
   },
 
   /**
@@ -67,7 +66,9 @@ export const openaiProvider = {
       userPrompt,
       maxTokens,
       useJsonMode,
-      providerName: "OpenAI"
+      providerName: "OpenAI",
+      // GPT-5.x / o-series reject "max_tokens" — OpenAI requires "max_completion_tokens".
+      tokenParam: "max_completion_tokens"
     });
   }
 };

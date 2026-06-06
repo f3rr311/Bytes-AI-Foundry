@@ -27,12 +27,10 @@ export const stabilityAIProvider = {
       return null;
     }
 
-    // Wrap raw prompt with item-icon framing so the model generates a focused
-    // item illustration rather than a full landscape scene.
-    const imagePrompt = `A single DnD 5e item: ${prompt}. Centered on a dark, shadowy background. Highly detailed textures on metal, leather, gemstones, and magical auras. Style of a dark fantasy RPG inventory icon. No text, no letters, no words.`;
-
+    // `prompt` is already the final, user-controlled image prompt assembled by
+    // generateItemImage (the editable dallePrompt template). Send it verbatim.
     const formData = new FormData();
-    formData.append("prompt", imagePrompt);
+    formData.append("prompt", prompt);
     formData.append("negative_prompt", "blurry, bad quality, text, watermark, signature, low detail, landscape, scenery, multiple objects, background characters");
     formData.append("aspect_ratio", "1:1");
     formData.append("style_preset", "digital-art");

@@ -29,9 +29,11 @@ const IMAGE_FORMAT_MAP = {
   jpeg: { mime: "image/jpeg", ext: "jpg" }
 };
 
-/** Default max tokens for chat completions by item category. */
-const MAX_TOKENS_SPELL = 1400;
-const MAX_TOKENS_DEFAULT = 900;
+/** Default max tokens for chat completions by item category. Generous ceilings so
+ *  reasoning models (GPT-5.x / o-series) have room for internal reasoning AND the
+ *  JSON output — non-reasoning models stop at end_turn well before these caps. */
+const MAX_TOKENS_SPELL = 4000;
+const MAX_TOKENS_DEFAULT = 4000;
 
 /**
  * Accumulate token usage from an API response onto session/item cost trackers.
@@ -419,34 +421,53 @@ export async function generateItemImage(prompt, config) {
 
   const imageProvider = config.imageProvider || "openai";
 
+  // Apply the user-editable image-prompt template ONCE, before routing, so every
+  // provider receives the same final, user-controlled prompt (single source of
+  // truth). Previously only the OpenAI branch honored this setting, which made the
+  // template a "hidden", unchangeable prompt for xAI/Stability/FAL users.
+  const dallePrompt = game.settings.get(MODULE_ID, "dallePrompt");
+  const finalPrompt = dallePrompt.includes("{prompt}")
+    ? dallePrompt.replace("{prompt}", prompt)
+    : `${dallePrompt} ${prompt}`.trim();   // tolerate a template missing {prompt}
+
   // Route to non-OpenAI image providers
   if (imageProvider === "stable-diffusion") {
     try {
+      // Stable Diffusion self-templates via its own editable `sdMainPrompt`
+      // setting — pass the raw prompt so we don't double-template.
       const imagePath = await generateSDImage(prompt, config);
-      if (imagePath) return imagePath;
+      if (imagePath) {
+        trackImageGeneration();
+        return imagePath;
+      }
       console.warn("Stable Diffusion did not return an image, falling back to OpenAI.");
     } catch (err) {
       console.error("Error generating image with Stable Diffusion:", err);
       console.warn("Falling back to OpenAI.");
     }
   } else if (imageProvider === "stability-ai") {
-    return stabilityAIProvider.generateImage(prompt, config);
+    const imagePath = await stabilityAIProvider.generateImage(finalPrompt, config);
+    if (imagePath) trackImageGeneration();
+    return imagePath;
   } else if (imageProvider === "fal-ai") {
-    return falAIProvider.generateImage(prompt, config);
+    const imagePath = await falAIProvider.generateImage(finalPrompt, config);
+    if (imagePath) trackImageGeneration();
+    return imagePath;
   } else if (imageProvider === "xai") {
-    return xaiImageProvider.generateImage(prompt, config);
+    const imagePath = await xaiImageProvider.generateImage(finalPrompt, config);
+    if (imagePath) trackImageGeneration();
+    return imagePath;
   }
 
   // OpenAI image generation (default or fallback)
   if (!config.dalleApiKey) return null;
 
-  const dallePrompt = game.settings.get(MODULE_ID, "dallePrompt");
   const imageModel = config.imageModel;
   const imageFormat = config.imageFormat || "png";
 
   const requestBody = {
     model: imageModel,
-    prompt: dallePrompt.replace("{prompt}", prompt),
+    prompt: finalPrompt,
     n: 1,
     size: "1024x1024"
   };
@@ -503,8 +524,9 @@ export async function generateItemImage(prompt, config) {
 
 // ---------- Actor (NPC / Character) Generation ----------
 
-/** Max tokens for actor JSON completions — stat blocks are larger than items. */
-const MAX_TOKENS_ACTOR = 2500;
+/** Max tokens for actor JSON completions — stat blocks are larger than items, plus
+ *  reasoning-model headroom (see MAX_TOKENS_DEFAULT note). */
+const MAX_TOKENS_ACTOR = 6000;
 
 const NPC_PROMPT_BASE =
   "You are a creative fantasy writer and D&D 5e expert. Generate a complete NPC stat block as strictly valid JSON. " +

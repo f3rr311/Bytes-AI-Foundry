@@ -27,12 +27,11 @@ export const xaiImageProvider = {
       return null;
     }
 
-    // Wrap prompt with item-icon framing for focused D&D item art
-    const imagePrompt = `A single DnD 5e item: ${prompt}. Centered on a dark, shadowy background. Highly detailed textures on metal, leather, gemstones, and magical auras. Style of a dark fantasy RPG inventory icon. No text, no letters, no words.`;
-
+    // `prompt` is already the final, user-controlled image prompt assembled by
+    // generateItemImage (the editable dallePrompt template). Send it verbatim.
     const requestBody = {
-      model: DEFAULT_MODEL,
-      prompt: imagePrompt,
+      model: config.imageModel || DEFAULT_MODEL,
+      prompt,
       n: 1,
       response_format: "b64_json",
       aspect_ratio: "1:1"

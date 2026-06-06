@@ -14,11 +14,11 @@ export const xaiProvider = {
   supportsJsonMode: false,
   supportsImageGeneration: false,
   defaultEndpoint: "https://api.x.ai/v1/chat/completions",
-  defaultModels: { chat: "grok-4-0709", light: "grok-4-1-fast-non-reasoning" },
+  defaultModels: { chat: "grok-4.3", light: "grok-4.3" },
   modelChoices: {
-    "grok-4-0709":                    "Grok 4 (Flagship)",
-    "grok-4-1-fast-non-reasoning":    "Grok 4.1 Fast (Balanced)",
-    "grok-3":                         "Grok 3"
+    "grok-4.3":                     "Grok 4.3 (Recommended — fast & capable)",
+    "grok-4.20-0309-non-reasoning": "Grok 4.20 (Non-Reasoning)",
+    "grok-build-0.1":               "Grok Build 0.1 (Coding, Cheapest)"
   },
 
   /**

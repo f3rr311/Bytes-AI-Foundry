@@ -83,7 +83,7 @@
 .chatgpt-dialog .form-group label {
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--color-text-light-highlight, #b0b0b0);
+    color: #d6d6d6 !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -98,12 +98,18 @@
     padding: 8px 10px;
     border: 1px solid var(--color-border-light-tertiary, #444);
     border-radius: 4px;
-    background: var(--color-bg-option, #2a2a2a);
-    color: var(--color-text-primary, #ddd);
+    /* Explicit colors + !important — see note on .chatgpt-preview-input. */
+    background: #2a2a2a !important;
+    color: #f0f0f0 !important;
     font-size: 0.9rem;
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
+}
+
+.chatgpt-dialog .form-group select option {
+    background: #2a2a2a;
+    color: #f0f0f0;
 }
 
 .chatgpt-dialog .form-group select:focus,
@@ -132,7 +138,7 @@
 /* Placeholder text */
 .chatgpt-dialog .form-group textarea::placeholder,
 .chatgpt-dialog .form-group input::placeholder {
-    color: var(--color-text-dark-secondary, #777);
+    color: #9a9a9a !important;
     font-style: italic;
 }
 
@@ -275,7 +281,7 @@
 .chatgpt-dialog .chatgpt-preview-field label {
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--color-text-light-highlight, #b0b0b0);
+    color: #d6d6d6 !important;
 }
 
 .chatgpt-dialog .chatgpt-preview-field-row {
@@ -292,14 +298,22 @@
 .chatgpt-dialog .chatgpt-preview-input {
     width: 100%;
     padding: 6px 8px;
-    background: var(--color-bg-option, #2a2a2a);
+    /* Explicit colors + !important: Foundry's CSS variables resolve dark on some
+       themes/versions, and the module stylesheet is in a lower-priority @layer,
+       so we force readable contrast over core's unlayered input styles. */
+    background: #2a2a2a !important;
     border: 1px solid var(--color-border-light-tertiary, #444);
     border-radius: 4px;
-    color: var(--color-text-primary, #ddd);
+    color: #f0f0f0 !important;
     font-size: 0.9rem;
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
+}
+
+.chatgpt-dialog .chatgpt-preview-input::placeholder {
+    color: #9a9a9a !important;
+    opacity: 1;
 }
 
 .chatgpt-dialog .chatgpt-preview-input:focus {
@@ -327,17 +341,17 @@
     padding: 2px 8px;
     border-radius: 3px;
     font-size: 0.75rem;
-    background: var(--color-bg-option, #2a2a2a);
+    background: #2a2a2a !important;
     border: 1px solid var(--color-border-light-tertiary, #444);
-    color: var(--color-text-primary, #ddd);
+    color: #f0f0f0 !important;
 }
 
 /* Regenerate buttons */
 .chatgpt-dialog .chatgpt-regen-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--color-border-light-tertiary, #555);
     border-radius: 4px;
-    color: var(--color-text-dark-secondary, #aaa);
+    color: #dcd6ff !important;
     cursor: pointer;
     padding: 4px 8px;
     font-size: 0.78rem;
