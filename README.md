@@ -18,6 +18,14 @@
 
 <br>
 
+> [!IMPORTANT]
+>
+> **Bytes AI Foundry is developed and maintained here on GitHub.** If the package is ever removed from the official Foundry VTT listing, the module will continue to be maintained, and you can always install or update it directly with the manifest URL:
+>
+> `https://github.com/f3rr311/Bytes-AI-Foundry/releases/latest/download/module.json`
+
+<br>
+
 > [!NOTE]
 >
 > ### 🆕 What's New in v2.3.0 — NPC & Character Generation + Multi-Provider AI
