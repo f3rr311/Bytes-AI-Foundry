@@ -20,7 +20,8 @@ export const IMAGE_MODEL_DEFAULTS = {
   "xai":              "grok-imagine-image",
   "stable-diffusion": "",
   "stability-ai":     "stable-diffusion-xl-1024-v0-9",
-  "fal-ai":           "fal-ai/flux/dev"
+  "fal-ai":           "fal-ai/flux/dev",
+  "gemini-image":     "gemini-3.1-flash-image"
 };
 
 /**
@@ -238,7 +239,8 @@ export function registerSettings() {
       "xai":               "xAI Grok (Grok Imagine)",
       "stable-diffusion":  "Stable Diffusion (Local)",
       "stability-ai":      "Stability AI",
-      "fal-ai":            "FAL.ai (FLUX, Recraft, Ideogram)"
+      "fal-ai":            "FAL.ai (FLUX, Recraft, Ideogram)",
+      "gemini-image":      "Google Gemini (Imagen)"
     },
     group: MODULE_ID + ".image-provider",
     onChange: async (value) => {
@@ -280,7 +282,7 @@ export function registerSettings() {
   // ─── Image Model & Format ───
   game.settings.register(MODULE_ID, "imageModel", {
     name: "Image Generation Model",
-    hint: "* Auto-set when you switch Image AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-image-1, dall-e-3. Stability AI: stable-image-core. FAL.ai: fal-ai/flux/dev, fal-ai/recraft-v3.",
+    hint: "* Auto-set when you switch Image AI Provider. You can override with any model your provider supports. Examples — OpenAI: gpt-image-1, dall-e-3. Stability AI: stable-image-core. FAL.ai: fal-ai/flux/dev, fal-ai/recraft-v3. Gemini (generateContent): gemini-3.1-flash-image (default), gemini-2.5-flash-image, gemini-3-pro-image. Gemini (Imagen 4, predict): imagen-4.0-generate-001, imagen-4.0-fast-generate-001.",
     scope: "world",
     config: true,
     type: String,
@@ -414,7 +416,7 @@ export function registerSettings() {
   });
   game.settings.register(MODULE_ID, "dallePrompt", {
     name: "Image Prompt",
-    hint: "Template sent to the image model. {prompt} is replaced with the item's name + description. Everything else is the art style. Applies to every image provider (OpenAI, xAI, Stability, FAL).",
+    hint: "Template sent to the image model. {prompt} is replaced with the item's name + description. Everything else is the art style. Applies to every image provider (OpenAI, xAI, Stability, FAL, Gemini).",
     scope: "world",
     config: true,
     type: String,

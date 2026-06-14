@@ -28,7 +28,7 @@ import { NAME_KEYWORDS } from './utils/type-keywords.js';
  * @property {string|null} dnd5eVersion — dnd5e system version string, or null
  * @property {boolean} isV13Core — true if Foundry core version >= 13
  * @property {string} textProvider — "openai"|"anthropic"|"gemini"|"xai"|"ollama"|"custom"
- * @property {string} imageProvider — "openai"|"stable-diffusion"|"stability-ai"|"fal-ai"
+ * @property {string} imageProvider — "openai"|"stable-diffusion"|"stability-ai"|"fal-ai"|"gemini-image"
  * @property {string} anthropicApiKey — Anthropic API key
  * @property {string} geminiApiKey — Google Gemini API key
  * @property {string} xaiApiKey — xAI API key

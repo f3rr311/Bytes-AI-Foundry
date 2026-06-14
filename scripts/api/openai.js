@@ -8,6 +8,7 @@ import { generateSDImage } from './stable-diffusion.js';
 import { stabilityAIProvider } from './providers/stability-ai-provider.js';
 import { falAIProvider } from './providers/fal-ai-provider.js';
 import { xaiImageProvider } from './providers/xai-image-provider.js';
+import { geminiImageProvider } from './providers/gemini-image-provider.js';
 import { MODULE_ID } from '../settings.js';
 import { routeChatCompletion } from './provider-registry.js';
 import {
@@ -457,6 +458,10 @@ export async function generateItemImage(prompt, config) {
     const imagePath = await xaiImageProvider.generateImage(finalPrompt, config);
     if (imagePath) trackImageGeneration();
     return imagePath;
+  } else if (imageProvider === "gemini-image") {
+    const imagePath = await geminiImageProvider.generateImage(finalPrompt, config);
+    if (imagePath) trackImageGeneration();
+    return imagePath;
   }
 
   // OpenAI image generation (default or fallback)
@@ -748,6 +753,8 @@ export async function generateActorImage(prompt, imageType, config) {
     return falAIProvider.generateImage(imagePrompt, { ...config, imageFolder: targetFolder });
   } else if (imageProvider === "xai") {
     return xaiImageProvider.generateImage(imagePrompt, { ...config, imageFolder: targetFolder });
+  } else if (imageProvider === "gemini-image") {
+    return geminiImageProvider.generateImage(imagePrompt, { ...config, imageFolder: targetFolder });
   }
 
   // OpenAI image generation (default)
